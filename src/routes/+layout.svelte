@@ -12,6 +12,9 @@
 
 	{#if isLoggedIn}
 		Logged in!
+		<form method="POST" action="/logout">
+			<button type="submit">Logout</button>
+		</form>
 	{:else}
 	<a href={loginUrl}>Login with Github</a>
 	{/if}

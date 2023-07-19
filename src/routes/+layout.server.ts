@@ -1,4 +1,4 @@
-import { getAuthUrl,  } from '../lib/server/github';
+import { getAuthUrl } from '../lib/server/github';
 
 import type { PageServerLoad } from './$types';
 
@@ -13,3 +13,4 @@ export const load: PageServerLoad<Data> = async ({cookies}) => {
     loginUrl: getAuthUrl(),
   };
 };
+
