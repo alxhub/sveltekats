@@ -24,6 +24,16 @@ interface QueryVariables {
 	[name: string]: unknown;
 }
 
+export function getAuthUrl(): string {
+	const app = new App({
+		appId: GITHUB_APP_ID,
+		privateKey: GITHUB_KEY,
+		oauth: { clientId: GITHUB_CLIENT_ID, clientSecret: GITHUB_CLIENT_SECRET }
+	});
+	const res = app.oauth.getWebFlowAuthorizationUrl({});
+	return res.url;
+}
+
 async function queryGraphQl(query: string, variables?: QueryVariables): Promise<unknown> {
 	const app = new App({
 		appId: GITHUB_APP_ID,
@@ -163,4 +173,25 @@ export async function getDiscussionComments(number: number): Promise<DiscussionC
 		createdAt: comment.node.createdAt,
 		bodyHTML: comment.node.bodyHTML
 	}));
+}
+
+export interface RepositoryDetails {
+	description: string|null;
+	name: string;
+}
+
+export async function getRepoDetails(): Promise<RepositoryDetails> {
+	const body = await queryGraphQl(`
+		query repoDetails($repoOwner: String!, $repoName: String!) {
+			repository(owner: $repoOwner, name: $repoName) {
+				name
+				description
+			}
+		}
+	`);
+	const data = (body as any).repository;
+	return {
+		name: data.name,
+		description: data.description,
+	};
 }

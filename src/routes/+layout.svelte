@@ -1,10 +1,20 @@
 <script>
 	import Header from './Header.svelte';
 	import './styles.css';
+
+	export let data;
+
+	$: ({loginUrl, isLoggedIn} = data);
 </script>
 
 <div class="app">
 	<Header />
+
+	{#if isLoggedIn}
+		Logged in!
+	{:else}
+	<a href={loginUrl}>Login with Github</a>
+	{/if}
 
 	<main>
 		<slot />
