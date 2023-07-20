@@ -10,10 +10,10 @@
 </script>
 
 <div class="add-reaction">
-	<button on:click={() => (shown = !shown)}>Add reaction</button>
+	<button class="btn" on:click={() => (shown = !shown)}>Add reaction</button>
 	<dialog open={shown}>
 		{#each REACTIONS as reaction}
-			<button on:click={() => addReaction(reaction)}>{REACTION_EMOJI[reaction]}</button>{' '}
+			<button class="chip hover:variant-filled" on:click={() => addReaction(reaction)}>{REACTION_EMOJI[reaction]}</button>{' '}
 		{/each}
 	</dialog>
 </div>
