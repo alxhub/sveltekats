@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { REACTION_EMOJI } from '../../../lib/reactions';
 	import AddReaction from './AddReaction.svelte';
+	import CommentReplies from './CommentReplies.svelte';
 	export let data;
 
 	$: ({ discussion, comments } = data);
@@ -33,6 +34,7 @@
 					{comment.author}
 					{comment.createdAt}
 					{@html comment.bodyHTML}
+					<CommentReplies comment={comment.id} />
 				</li>
 			{/each}
 		</ul>

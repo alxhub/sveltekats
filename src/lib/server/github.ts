@@ -3,6 +3,7 @@ import { App } from 'octokit';
 
 import GITHUB_KEY from '../../../.env.private-key.pem?raw';
 import type { REACTIONS } from '../reactions';
+import type { DiscussionCommentReply } from '$lib/types';
 
 function requireEnv(key: string): string {
 	const value = env[key];
@@ -44,13 +45,7 @@ async function queryGraphQl(query: string, variables?: QueryVariables): Promise<
 
 	return await octokit.graphql(
 		query,
-		Object.assign(
-			{
-				repoOwner: GITHUB_REPO_OWNER,
-				repoName: GITHUB_REPO_NAME
-			},
-			variables
-		)
+		variables,
 	);
 }
 
@@ -71,6 +66,11 @@ export interface DiscussionDetails extends Discussion {
 	bodyHTML: string;
 }
 
+const REPO_VARS = {
+	repoOwner: GITHUB_REPO_OWNER,
+	repoName: GITHUB_REPO_NAME
+};
+
 export async function getDiscussionList(): Promise<Discussion[]> {
 	const body = await queryGraphQl(`
 		query discussionList($repoOwner: String!, $repoName: String!) {
@@ -89,7 +89,7 @@ export async function getDiscussionList(): Promise<Discussion[]> {
 				}
 			}
 		}
-	`);
+	`, REPO_VARS);
 	const discussions = (body as any).repository.discussions.edges;
 	return discussions.map((discussion: any) => ({
 		number: discussion.node.number,
@@ -122,7 +122,7 @@ export async function getDiscussionDetails(number: number): Promise<DiscussionDe
       }
 		}
 	`,
-		{ number }
+		{ number, ...REPO_VARS }
 	);
 	const discussion = (body as any).repository.discussion;
 	return {
@@ -139,6 +139,7 @@ export async function getDiscussionDetails(number: number): Promise<DiscussionDe
 }
 
 export interface DiscussionComment {
+	id: string;
 	author: string;
 	createdAt: string;
 	bodyHTML: string;
@@ -153,6 +154,7 @@ export async function getDiscussionComments(number: number): Promise<DiscussionC
 					comments(last: 10) {
 						edges {
 							node {
+								id
 								author {
 									login
 								}
@@ -165,14 +167,47 @@ export async function getDiscussionComments(number: number): Promise<DiscussionC
 			}
 		}
 	`,
-		{ number }
+		{ number, ...REPO_VARS }
 	);
 	const comments = (body as any).repository.discussion.comments.edges;
 	return comments.map((comment: any) => ({
+		id: comment.node.id,
 		author: comment.node.author.login,
 		createdAt: comment.node.createdAt,
 		bodyHTML: comment.node.bodyHTML
 	}));
+}
+
+export async function getDiscussionCommentReplies(id: string): Promise<DiscussionCommentReply[]> {
+	const body = await queryGraphQl(
+		`
+		query discussionCommentReplies($id: ID!) {
+			node(id: $id) {
+				... on DiscussionComment {
+					replies(first: 10) {
+						edges {
+							node {
+								author {
+									login
+								}
+								createdAt
+								bodyHTML
+							}
+						}
+					}
+				}
+			}
+		}
+	`,
+		{ id, ...REPO_VARS }
+	);
+	return (body as any).node.replies.edges.map((edge: any) => {
+		return {
+			author: edge.node.author.login,
+			bodyHTML: edge.node.bodyHTML,
+			createdAt: edge.node.createdAt,
+		};
+	});
 }
 
 export interface RepositoryDetails {
