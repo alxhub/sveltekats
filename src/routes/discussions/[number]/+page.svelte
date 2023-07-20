@@ -32,9 +32,13 @@
 		<ul>
 			{#each comments as comment}
 				<li class="card m-2 p-2">
-					<span class="card-header">{comment.author}</span>
-					{comment.createdAt}
-					{@html comment.bodyHTML}
+					<p class="card-header">
+						{comment.author}
+						{comment.createdAt}
+					</p>
+					<p class="text-xl">
+						{@html comment.bodyHTML}
+					</p>
 					<CommentReplies comment={comment.id} />
 				</li>
 			{/each}

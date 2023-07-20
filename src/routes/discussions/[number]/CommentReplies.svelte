@@ -10,18 +10,26 @@ async function loadReplies(): Promise<DiscussionCommentReply[]> {
 </script>
 
 {#if replies === null}
-  <button on:click={() => replies = loadReplies()}>Load Replies</button>
+  <button class="btn" on:click={() => replies = loadReplies()}>Load Replies</button>
 {:else}
-  <ul>
+  <ul class="list">
     {#await replies}
-      <p>Loading...</p>
+      <div class="p-4 space-y-4">
+        <div class="placeholder animate-pulse"></div>
+        <div class="placeholder animate-pulse"></div>
+        <div class="placeholder animate-pulse"></div>
+      </div>
     {:then replies}
       {#if replies.length > 0}
         {#each replies as reply}
-        <li>
-          {reply.author}
-          {reply.createdAt}
-          {@html reply.bodyHTML}
+        <li class="p-y-1">
+          <p>
+            {reply.author}
+            {reply.createdAt}
+          </p>
+          <p>
+            {@html reply.bodyHTML}
+          </p>
         </li>
         {/each}
       {:else}
