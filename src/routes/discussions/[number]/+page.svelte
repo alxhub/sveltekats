@@ -31,8 +31,8 @@
 		<h2>Comments</h2>
 		<ul>
 			{#each comments as comment}
-				<li>
-					{comment.author}
+				<li class="card m-2 p-2">
+					<span class="card-header">{comment.author}</span>
 					{comment.createdAt}
 					{@html comment.bodyHTML}
 					<CommentReplies comment={comment.id} />
