@@ -223,7 +223,7 @@ export async function getRepoDetails(): Promise<RepositoryDetails> {
 				description
 			}
 		}
-	`);
+	`, REPO_VARS);
 	const data = (body as any).repository;
 	return {
 		name: data.name,
