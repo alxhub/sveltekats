@@ -11,9 +11,9 @@
 	<h1>Discussions</h1>
 	<ol class="discussions">
 		{#each data.discussions as discussion (discussion.number)}
-			<li>
-				<a href="/discussions/{discussion.number}"><h2>{discussion.title}</h2></a>
-				<p>by {discussion.author} on {discussion.createdAt}</p>
+			<li class="card p-4 m-4">
+				<a class="card-header" href="/discussions/{discussion.number}"><h2>{discussion.title}</h2></a>
+				<p class="card-footer">by {discussion.author} on {discussion.createdAt}</p>
 			</li>
 		{/each}
 	</ol>
