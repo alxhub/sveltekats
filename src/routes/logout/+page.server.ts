@@ -1,3 +1,4 @@
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from '../$types';
 
 export interface Data{ isLoggedIn: boolean}
@@ -7,10 +8,13 @@ function logout(cookies) {
   cookies.delete('oauth');
 }
 
-export const load: PageServerLoad = async ({cookies}) => {
-  // TODO: use a store for managing global state of if user is logged in. That way UI will update
-  // when user logs out.
+// only render the logout page if the user is logged out
+export const load: PageServerLoad = async ({cookies, fetch}) => {
   const isLoggedIn = (cookies.get('oauth') ?? '') !== '';
+  if (isLoggedIn) {
+    await fetch("/logout", {method: "POST"});
+    throw redirect(307, '/logout');
+  }
 
 	return { isLoggedIn };
 };
