@@ -2,6 +2,8 @@
 	import Header from './Header.svelte';
 	import './styles.css';
 
+	import Button, { Label } from '@smui/button';
+
 	export let data;
 
 	$: ({loginUrl, isLoggedIn} = data);
@@ -13,7 +15,7 @@
 	{#if isLoggedIn}
 		Logged in!
 		<form method="POST" action="/logout">
-			<button type="submit">Logout</button>
+			<Button type="submit">Logout</Button>
 		</form>
 	{:else}
 	<a href={loginUrl}>Login with Github</a>

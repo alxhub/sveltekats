@@ -7,6 +7,9 @@
 /bazel-out
 .svelte-kit
 
+static/smui-dark.css
+static/smui.css
+
 # Node
 /node_modules
 npm-debug.log
