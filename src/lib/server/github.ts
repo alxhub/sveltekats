@@ -1,5 +1,5 @@
 import { env } from '$env/dynamic/private';
-import { App } from 'octokit';
+import { App, Octokit } from 'octokit';
 
 import GITHUB_KEY from '../../../.env.private-key.pem?raw';
 import type { REACTIONS } from '../reactions';
@@ -32,17 +32,42 @@ export function getAuthUrl(): string {
 		oauth: { clientId: GITHUB_CLIENT_ID, clientSecret: GITHUB_CLIENT_SECRET }
 	});
 	const res = app.oauth.getWebFlowAuthorizationUrl({});
+	// app.oauth.createToken({code: '123'});
 	return res.url;
 }
 
-async function queryGraphQl(query: string, variables?: QueryVariables): Promise<unknown> {
+export async function getTokenForOauthCode(code: string): Promise<string> {
 	const app = new App({
 		appId: GITHUB_APP_ID,
 		privateKey: GITHUB_KEY,
 		oauth: { clientId: GITHUB_CLIENT_ID, clientSecret: GITHUB_CLIENT_SECRET }
 	});
-	const octokit = await app.getInstallationOctokit(GITHUB_INSTALLATION_ID);
+	const auth = await app.oauth.createToken({
+		code});
+	return auth.authentication.token;
+}
 
+export async function validateToken(token: string): Promise<boolean> {
+	const app = new App({
+		appId: GITHUB_APP_ID,
+		privateKey: GITHUB_KEY,
+		oauth: { clientId: GITHUB_CLIENT_ID, clientSecret: GITHUB_CLIENT_SECRET }
+	});
+	try {
+		await app.oauth.checkToken({token});
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+async function queryGraphQl(query: string, variables?: QueryVariables): Promise<unknown> {
+	const app = new App({
+		appId: GITHUB_APP_ID,
+		privateKey: GITHUB_KEY,	
+		oauth: { clientId: GITHUB_CLIENT_ID, clientSecret: GITHUB_CLIENT_SECRET }
+	});
+	const octokit = await app.getInstallationOctokit(GITHUB_INSTALLATION_ID);
 	return await octokit.graphql(
 		query,
 		variables,
@@ -229,4 +254,35 @@ export async function getRepoDetails(): Promise<RepositoryDetails> {
 		name: data.name,
 		description: data.description,
 	};
+}
+
+export async function authedQueryGraphQl(token: string, query: string, variables?: QueryVariables): Promise<unknown> {
+	const octo = new Octokit({
+		auth: token,
+	})
+	return octo.graphql(query, variables);
+}
+
+export async function getDiscussionId(number: number): Promise<string> {
+	const body: any = await queryGraphQl(`
+	query discussionId($repoOwner: String!, $repoName: String!, $number: Int!) {
+		repository(owner: $repoOwner, name: $repoName) {
+			discussion(number: $number) {
+				id
+			}
+		}
+	}
+	`, {...REPO_VARS, number});
+	return body.repository.discussion.id;
+}
+
+
+export async function addDiscussionComment(token: string, id: string, comment: string): Promise<void> {
+	await authedQueryGraphQl(token, `
+		mutation AddComment($id: ID!, $body: String!){
+			addDiscussionComment(input: {body: $body, discussionId: $id}) {
+				__typename
+			}
+		}
+	`, {id, body: comment});
 }

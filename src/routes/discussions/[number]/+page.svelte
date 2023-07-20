@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { REACTION_EMOJI } from '../../../lib/reactions';
+    import AddComment from './AddComment.svelte';
 	import AddReaction from './AddReaction.svelte';
 	import CommentReplies from './CommentReplies.svelte';
 	export let data;
@@ -38,6 +39,8 @@
 				</li>
 			{/each}
 		</ul>
+		<h2>Post Comment</h2>
+		<AddComment />
 	</div>
 </section>
 
